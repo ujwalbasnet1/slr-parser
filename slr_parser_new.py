@@ -11,24 +11,22 @@ from copy import copy, deepcopy
 
 global master
 master = Tk()
+master.geometry("400x800")
+
 
 master.title('SLR Parser')
 
 canvas = Canvas(master, width=master.winfo_screenwidth(), height=master.winfo_screenheight())
 
-u1_entry = Entry(canvas)
-canvas.create_window(220, 200, window=u1_entry, height=150, width=300)
-
-u2_entry = Entry(canvas)
-canvas.create_window(220, 430, window=u2_entry, height=100, width=300)
-
 grammars = open("grammar.txt")
+input_string = "id * id + id"
+
 G = {}
 C = {}
 I = {}
 J = {}
 
-inputstring = ""
+
 
 start = ""
 terminals = []
@@ -575,9 +573,9 @@ def view_parsing():
 
 
 def view_stack():
-    inputstring = u2_entry.get()
-    row, ste, sta, inp, act = process_input(inputstring)
-    print (inputstring)
+    
+    row, ste, sta, inp, act = process_input(input_string)
+    print (input_string)
 
     show = Toplevel(master)
     show.title("Stack Implementation")
@@ -621,10 +619,6 @@ def view_stack():
     # display.pack()
 
 
-def getG():
-    inputstring = u1_entry.get()
-    print (inputstring)
-
 
 def main():
     parse_grammar()
@@ -633,29 +627,35 @@ def main():
     parse_table = [["" for c in range(len(terminals) + len(nonterminals) + 1)] for r in range(len(C))]
     print_info()
     construct_dfa()
-    # process_input()
+    
+    
+    button_height =  48
+    button_width = 200
+    button_gap = 48
 
+    pos_x = 200
+    pos_y = 200
 
-
-    var = IntVar()
-
-    table = canvas.create_polygon(50, 100, 600, 100, 600, 310, 50, 310, fill='PaleVioletRed1')
-    canvas.create_text(150, 110, text="Enter the grammar", font="Times 15 bold")
-
-    table1 = canvas.create_polygon(50, 350, 600, 350, 600, 500, 50, 500, fill='PaleVioletRed1')
-    canvas.create_text(150, 360, text="Enter input string", font="Times 15 bold")
-
-    lr0 = Button(canvas, text="View LR(0) Items", font="Times 15 bold", command=view_lr)
-    canvas.create_window(750, 270, window=lr0, height=50, width=170)
+    
+    lr0 = Button(canvas, text="View SLR Items", font="Times 15 bold", command=view_lr)
+    canvas.create_window(pos_x, pos_y, window=lr0, height=button_height, width=button_width)
+    
+    pos_y += button_height + button_gap
 
     pt = Button(canvas, text="View Parsing Table", font="Times 15 bold", command=view_parsing)
-    canvas.create_window(750, 350, window=pt, height=50, width=170)
+    canvas.create_window(pos_x, pos_y, window=pt, height=button_height, width=button_width)
+    
+    pos_y += button_height + button_gap
 
     vs = Button(canvas, text='View Stack', font="Times 15 bold", command=view_stack)
-    canvas.create_window(950, 270, window=vs, height=50, width=170)
+    canvas.create_window(pos_x, pos_y, window=vs, height=button_height, width=button_width)
 
-    quit = Button(canvas, text='QUIT', font="Times 15 bold", command=master.quit)
-    canvas.create_window(950, 350, window=quit, height=50, width=170)
+    
+    # canvas.create_window(750, 350, window=pt, height=50, width=170)
+
+    
+    # canvas.create_window(950, 270, window=vs, height=50, width=170)
+
     canvas.pack()
 
     # process_input()
