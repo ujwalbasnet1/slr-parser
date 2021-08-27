@@ -6,6 +6,8 @@ import time
 import os
 from Tkinter import Canvas, Label, Frame, Button, Tk, Entry, Toplevel
 from graphviz import Digraph
+from copy import copy, deepcopy
+
 
 global master
 master = Tk()
@@ -39,29 +41,29 @@ r1 = []
 
 def parse_grammar():
     global G, start, terminals, nonterminals, symbols
-    for line in grammars:       #read productions from grammar.txt
+    for line in grammars:
         line = " ".join(line.split())
         if line == '\n':
             break
-        head = line[:line.index("->")].strip()          #symbols to left of arrow
-        prods = [l.strip().split(' ') for l in ''.join(line[line.index("->") + 2:]).split('|')]     #symbols to right of arrow
+        head = line[:line.index("->")].strip()
+        prods = [l.strip().split(' ') for l in ''.join(line[line.index("->") + 2:]).split('|')]
         if not start:
-            start = head + "'"      #augmenting the grammar i.e S'->S
+            start = head + "'"
             G[start] = [[head]]
             nonterminals.append(start)
         if head not in G:
             G[head] = []
-        if head not in nonterminals:    #add left symbols to non terminals
+        if head not in nonterminals:
             nonterminals.append(head)
         for prod in prods:
-            G[head].append(prod)        #associate rules to correspoding non terminals
+            G[head].append(prod)
             for char in prod:
-                if not char.isupper() and char not in terminals:        #check terminal or non terminal and add
+                if not char.isupper() and char not in terminals:
                     terminals.append(char)
                 elif char.isupper() and char not in nonterminals:
                     nonterminals.append(char)
-                    G[char] = []  # non terminals dont produce other symbols
-    symbols = terminals + nonterminals
+                    G[char] = []    #non terminals dont produce other symbols
+    symbols =  nonterminals+terminals
 
 
 first_seen = []
@@ -154,7 +156,6 @@ def GOTO(I, X):
 
 
 def items():
-    # form all LR(0) items
     global C
     i = 1
     C = {'I0': closure({start: [['.'] + G[start][0]]})}     #represents all LR items
@@ -183,8 +184,7 @@ def ACTION(i, a):
                                         print ("ERROR: Shift-Reduce Conflict at State " + str(i) + ", Symbol \'" + str(terminals.index(a)) + "\'")
                                     error = 1
                                     if "s" + str(k) not in parse_table[i][terminals.index(a)]:
-                                        parse_table[i][terminals.index(a)] = parse_table[i][
-                                                                                 terminals.index(a)] + "/s" + str(k)
+                                        parse_table[i][terminals.index(a)] = parse_table[i][terminals.index(a)] + "/s" + str(k)
                                     return parse_table[i][terminals.index(a)]
                                 else:
                                     parse_table[i][terminals.index(a)] = "s" + str(k)       #assign Ii,a=sk  eg I2,= => I6 
@@ -316,6 +316,7 @@ def print_info():
 def construct_dfa():
     Z = []
     pd = []
+    
     print ("\nITEMS:")
     for i in range(len(C)):
         print ('I' + str(i) + ':')
@@ -344,13 +345,37 @@ def construct_dfa():
             ACTION(i, j)
     global dot
 
+    print("---------------- parse table ----------------")
+    parse_table_copy = deepcopy(parse_table)
+    for item in parse_table_copy:
+        del item[-1]
+    
+    for item in parse_table_copy:
+        print(item)
+
+        print("\n")
+    print("---------------- end parse table ----------------")
+    print("---------------- symbols ----------------")
+    symbols_abc = terminals + nonterminals
+    print(symbols_abc)
+    print("---------------- end end end ----------------")
+    
+    
+
     dot = Digraph()
     for i in range(len(C)):
-        for a in symbols:
-            rel = parse_table[i][symbols.index(a)]
+        for a in symbols_abc:
+            rel = parse_table_copy[i][symbols_abc.index(a)]
+
+            if(i == 6):
+                print(i, a, symbols_abc.index(a), rel)
+                
+            
+                print(parse_table_copy[i])
+                print("---")
 
             if rel:
-                # print (rel)
+                # print rel
                 if (len(rel) == 1):
                     r = int(rel)
                 else:
@@ -359,17 +384,25 @@ def construct_dfa():
                     elif '/' in rel:
                         spos = rel.index('s')
                         rel = rel[spos:spos + 2]
-                        print (rel)
-                        r = int(rel[1:3])
-                    else:
-                        # print (rel)
-                        r = int(rel[1:3])
+                        
+                        r = int(rel[1:])
+                        if( i == 6):
+                            print("INDEX")
+                            print (r)
+                    else:                        
+                        r = int(rel[1:])
 
-                print("node %d relates to %s for %s" % (i, r, a))
+                        if(rel[0].isdigit()):
+                            r = int(rel)
+
+
+                # print("node %d relates to %s for %s" % (i, r, a))
                 relation.append(chr(i + 97) + chr(r + 97))
                 r1.append(a)
 
-    print (relation)
+    print("---------------- end end end ----------------")
+    # return
+    # print (relation)
     print (r1)
 
     M = [v for v in I.values()]
