@@ -3,49 +3,8 @@
 from graphviz import Digraph
 from grammer import Grammar
 import argparse
+from first_follow import first_follow
 
-
-def first_follow(G):
-    def union(set_1, set_2):
-        set_1_len = len(set_1)
-        set_1 |= set_2
-
-        return set_1_len != len(set_1)
-
-    first = {symbol: set() for symbol in G.symbols}
-    first.update((terminal, {terminal}) for terminal in G.terminals)
-    follow = {symbol: set() for symbol in G.nonterminals}
-    follow[G.start].add('$')
-
-    while True:
-        updated = False
-
-        for head, bodies in G.grammar.items():
-            for body in bodies:
-                for symbol in body:
-                    if symbol != '^':
-                        updated |= union(first[head], first[symbol] - set('^'))
-
-                        if '^' not in first[symbol]:
-                            break
-                    else:
-                        updated |= union(first[head], set('^'))
-                else:
-                    updated |= union(first[head], set('^'))
-
-                aux = follow[head]
-                for symbol in reversed(body):
-                    if symbol == '^':
-                        continue
-                    if symbol in follow:
-                        updated |= union(follow[symbol], aux - set('^'))
-                    if '^' in first[symbol]:
-                        aux = aux | first[symbol]
-                    else:
-                        aux = first[symbol]
-
-        if not updated:
-            return first, follow
 
 
 class SLRParser:
@@ -66,15 +25,20 @@ class SLRParser:
         self.parse_table_symbols = self.action + self.goto
         self.parse_table = self.construct_table()
 
-    def CLOSURE(self, I):
+    def CLOSURE(self, I, verbose=False):
         J = I
+
+        if(verbose):
+            print("THIS IS J")
+            print(J)
+            print("------------------------")
+        
 
         while True:
             item_len = len(J)
 
             
             for head, bodies in J.copy().items():
-                print(bodies)
                 for body in bodies.copy():
                     if '.' in body[:-1]:
                         symbol_after_dot = body[body.index('.') + 1]
@@ -90,9 +54,7 @@ class SLRParser:
     def GOTO(self, I, X):
         goto = {}
 
-        print("GOTO")
         for head, bodies in I.items():
-            print(head, bodies)
             for body in bodies:
                 if '.' in body[:-1]:
                     dot_pos = body.index('.')
@@ -106,7 +68,7 @@ class SLRParser:
         return goto
 
     def items(self, G_prime):
-        C = [self.CLOSURE({G_prime.start: {('.', G_prime.start[:-1])}})]
+        C = [self.CLOSURE({G_prime.start: {('.', G_prime.start[:-1])}}, verbose=True)]
         
         
 
@@ -116,7 +78,7 @@ class SLRParser:
             for I in C.copy():
                 for X in G_prime.symbols:
                     goto = self.GOTO(I, X)
-
+                    print("GOTO ", goto)
                     if goto and goto not in C:
                         C.append(goto)
 
@@ -358,7 +320,7 @@ def main():
     results = slr_parser.LR_parser(tokens)
     slr_parser.print_LR_parser(results)
 
-    # slr_parser.generate_automaton()
+    slr_parser.generate_automaton()
 
 
 if __name__ == "__main__":
