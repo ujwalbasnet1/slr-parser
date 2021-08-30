@@ -1,6 +1,10 @@
 from Tkinter import *
 from Tkinter import Tk
-from Tkinter import Canvas, Label, Button, Tk, Toplevel
+import Tkinter as tk
+import random
+import time
+import os
+from Tkinter import Canvas, Label, Frame, Button, Tk, Entry, Toplevel
 from graphviz import Digraph
 from copy import deepcopy
 
@@ -8,6 +12,8 @@ from copy import deepcopy
 global master
 master = Tk()
 master.geometry("400x800")
+
+
 master.title('SLR Parser')
 
 canvas = Canvas(master, width=master.winfo_screenwidth(), height=master.winfo_screenheight())
@@ -19,6 +25,7 @@ G = {}
 C = {}
 I = {}
 J = {}
+
 
 
 start = ""
@@ -237,8 +244,8 @@ def print_info():
     i = 0
     for head in G.keys():
         for prods in G[head]:
-            print ("{:>{width}}:".format(str(i), width=len(str(sum(len(v) for v in G.items()) - 1)))),
-            print ("{:>{width}} ->".format(head, width=len(max(G.keys(), key=len)))),
+            print ("{:>{width}}:".format(str(i), width=len(str(sum(len(v) for v in G.items()) - 1))),)
+            print ("{:>{width}} ->".format(head, width=len(max(G.keys(), key=len))),)
             for prod in prods:
                 print (prod,)
             print
@@ -341,6 +348,10 @@ def construct_dfa():
     for item in parse_table_copy:
         del item[-1]
     
+    for item in parse_table_copy:
+        print(item)
+
+        print("\n")
     print("---------------- end parse table ----------------")
     print("---------------- symbols ----------------")
     symbols_abc = terminals + nonterminals
@@ -354,6 +365,12 @@ def construct_dfa():
         for a in symbols_abc:
             rel = parse_table_copy[i][symbols_abc.index(a)]
 
+            if(i == 6):
+                print(i, a, symbols_abc.index(a), rel)
+                
+            
+                print(parse_table_copy[i])
+                print("---")
 
             if rel:
                 # print rel
@@ -367,6 +384,9 @@ def construct_dfa():
                         rel = rel[spos:spos + 2]
                         
                         r = int(rel[1:])
+                        if( i == 6):
+                            print("INDEX")
+                            print (r)
                     else:                        
                         r = int(rel[1:])
 
@@ -376,7 +396,6 @@ def construct_dfa():
 
                 # print("node %d relates to %s for %s" % (i, r, a))
                 relation.append(chr(i + 97) + chr(r + 97))
-                 
                 r1.append(a)
 
     print("---------------- end end end ----------------")
@@ -407,8 +426,6 @@ def process_input(inputX):
     print ("\n+--------+----------------------------+----------------------------+----------------------------+")
     print ("|{:^8}|{:^28}|{:^28}|{:^28}|".format("STEP", "STACK", "INPUT", "ACTION"))
     print ("+--------+----------------------------+----------------------------+----------------------------+")
-
-    [1,2,3,4]
 
     step = 1
     while True:

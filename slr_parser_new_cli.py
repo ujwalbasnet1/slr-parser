@@ -211,7 +211,7 @@ def print_info():
                 print(prod),
             print
             i += 1
-    print("\nTERMINALS   :", terminals)
+    print("TERMINALS   :", terminals)
     print("NONTERMINALS:", nonterminals)
     print("SYMBOLS     :", symbols)
     print("\nFIRST:")
